@@ -1,42 +1,51 @@
 export class Medicament {
-  constructor(id, denomination, formepharmaceutique, photo, qte) {
-    this._denomination = denomination;
-    this._formepharmaceutique = formepharmaceutique;
-    this._photo = photo;
-    this._qte = qte;
+  constructor(id, nom, quantiteParUnite, imageURL, unitesEnStock) {
     this._id = id;
+    this._nom = nom;
+    this._quantiteParUnite = quantiteParUnite;
+    this._imageURL = imageURL;
+    this._unitesEnStock = unitesEnStock;
   }
-  // ---- getters
-  get denomination() {
-    return this._denomination;
-  }
+
+  // Getters
   get id() {
     return this._id;
   }
-  get formepharmaceutique() {
-    return this._formepharmaceutique;
+
+  get nom() {
+    return this._nom;
   }
-  get photo() {
-    return this._photo;
+
+  get quantiteParUnite() {
+    return this._quantiteParUnite;
   }
-  get qte() {
-    return this._qte;
+
+  get imageURL() {
+    return this._imageURL;
   }
-  // ---- setters
-  denomination(denomination) {
-    this._denomination = denomination;
+
+  get unitesEnStock() {
+    return this._unitesEnStock;
   }
-  formepharmaceutique(formepharmaceutique) {
-    this._formepharmaceutique = formepharmaceutique;
+
+  // Setters
+  set nom(value) {
+    this._nom = value;
   }
-  photo(photo) {
-    this._photo = photo;
+
+  set quantiteParUnite(value) {
+    this._quantiteParUnite = value;
   }
-  qte(qte) {
-    this._qte = qte;
+
+  set imageURL(value) {
+    this._imageURL = value;
   }
-  // -- toString
+
+  set unitesEnStock(value) {
+    this._unitesEnStock = value;
+  }
+
   toString() {
-    return `Médicament : ${this._denomination}, Forme : ${this._formepharmaceutique}, Quantité : ${this._qte}`;
+    return `Médicament : ${this._nom}, Quantité par unité : ${this._quantiteParUnite}, Stock : ${this._unitesEnStock}`;
   }
 }

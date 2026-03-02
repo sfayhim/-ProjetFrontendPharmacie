@@ -4,6 +4,8 @@ import ListeMedicaments from './components/ListeMedicaments.vue';
 </script>
 <template>
   <HeaderPharma />
+  <br>
   <ListeMedicaments />
 </template>
-<style scoped></style>
+<style scoped>
+</style>
