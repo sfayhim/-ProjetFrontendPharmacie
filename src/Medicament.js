@@ -1,13 +1,13 @@
 export class Medicament {
-  constructor(id, nom, quantiteParUnite, imageURL, unitesEnStock) {
+  constructor(id, nom, quantiteParUnite, imageURL, unitesEnStock, href) {
     this._id = id;
     this._nom = nom;
     this._quantiteParUnite = quantiteParUnite;
     this._imageURL = imageURL;
     this._unitesEnStock = unitesEnStock;
+    this._href = href || '';
   }
 
-  // Getters
   get id() {
     return this._id;
   }
@@ -28,7 +28,10 @@ export class Medicament {
     return this._unitesEnStock;
   }
 
-  // Setters
+  get href() {
+    return this._href;
+  }
+
   set nom(value) {
     this._nom = value;
   }
@@ -43,6 +46,10 @@ export class Medicament {
 
   set unitesEnStock(value) {
     this._unitesEnStock = value;
+  }
+
+  set href(value) {
+    this._href = value;
   }
 
   toString() {
