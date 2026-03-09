@@ -7,7 +7,7 @@ import FormModif from "./FormModif.vue";
 
 const emit = defineEmits(["miseAJourNombre"]);
 
-const URL_BASE = "https://projetbackendpharmacie.onrender.com/api/medicaments";
+const URL_BASE = "https://apipharmacie.pecatte.fr/api/12/medicaments";
 
 const listeMed = reactive([]);
 const recherche = ref("");
@@ -18,22 +18,22 @@ const medAModifier = ref(null);
 const listeFiltree = computed(() => {
   const terme = recherche.value.trim().toLowerCase();
   if (!terme) return listeMed;
-  return listeMed.filter((m) => m.nom.toLowerCase().includes(terme));
+  return listeMed.filter((m) => m.denomination.toLowerCase().includes(terme));
 });
 
 function getMedicaments() {
   fetch(URL_BASE)
     .then((resp) => resp.json())
     .then((data) => {
-      for (let m of data._embedded.medicaments) {
+      listeMed.splice(0, listeMed.length);
+      for (let m of data) {
         listeMed.push(
           new Medicament(
             m.id,
-            m.nom,
-            m.quantiteParUnite,
-            m.imageURL,
-            m.unitesEnStock,
-            m._links?.self?.href || "",
+            m.denomination,
+            m.formepharmaceutique,
+            m.photo,
+            m.qte,
           ),
         );
       }
@@ -43,9 +43,9 @@ function getMedicaments() {
 }
 
 function handlerSupprimer(med) {
-  if (!confirm("Supprimer  " + med.nom + "  définitivement ?")) return;
-  const urlMed = med.href || URL_BASE + "/" + med.id;
-  fetch(urlMed, { method: "DELETE" })
+  if (!confirm("Supprimer " + med.denomination + " ?")) return;
+  fetch(URL_BASE + "/" + med.id, { method: "DELETE" })
+    .then((resp) => resp.json())
     .then(() => {
       const idx = listeMed.findIndex((m) => m.id === med.id);
       if (idx !== -1) listeMed.splice(idx, 1);
@@ -55,62 +55,41 @@ function handlerSupprimer(med) {
 }
 
 function handlerAjouterUnite(med) {
-  const urlMed = med.href || URL_BASE + "/" + med.id;
-  let myHeaders = new Headers();
-  myHeaders.append("Content-Type", "application/json");
-  const fetchOptions = {
-    method: "PATCH",
-    headers: myHeaders,
-    body: JSON.stringify({ unitesEnStock: med.unitesEnStock + 1 }),
-  };
-  fetch(urlMed, fetchOptions)
+  fetch(URL_BASE, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: med.id, qte: med.qte + 1 }),
+  })
     .then((resp) => resp.json())
     .then(() => {
-      med.unitesEnStock = med.unitesEnStock + 1;
+      med.qte = med.qte + 1;
     })
     .catch((err) => console.log(err));
 }
 
 function handlerRetirerUnite(med) {
-  if (med.unitesEnStock <= 0) return;
-  const urlMed = med.href || URL_BASE + "/" + med.id;
-  let myHeaders = new Headers();
-  myHeaders.append("Content-Type", "application/json");
-  const fetchOptions = {
-    method: "PATCH",
-    headers: myHeaders,
-    body: JSON.stringify({ unitesEnStock: med.unitesEnStock - 1 }),
-  };
-  fetch(urlMed, fetchOptions)
+  if (med.qte <= 0) return;
+  fetch(URL_BASE, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: med.id, qte: med.qte - 1 }),
+  })
     .then((resp) => resp.json())
     .then(() => {
-      med.unitesEnStock = med.unitesEnStock - 1;
+      med.qte = med.qte - 1;
     })
     .catch((err) => console.log(err));
 }
 
 function handlerAjouter(donnees) {
-  let myHeaders = new Headers();
-  myHeaders.append("Content-Type", "application/json");
-  const fetchOptions = {
+  fetch(URL_BASE, {
     method: "POST",
-    headers: myHeaders,
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(donnees),
-  };
-  fetch(URL_BASE, fetchOptions)
+  })
     .then((resp) => resp.json())
-    .then((data) => {
-      listeMed.push(
-        new Medicament(
-          data.id,
-          data.nom,
-          data.quantiteParUnite,
-          data.imageURL,
-          data.unitesEnStock,
-          data._links?.self?.href || "",
-        ),
-      );
-      emit("miseAJourNombre", listeMed.length);
+    .then(() => {
+      getMedicaments();
       afficherFormAjout.value = false;
     })
     .catch((err) => console.log(err));
@@ -122,25 +101,15 @@ function ouvrirModif(med) {
 }
 
 function handlerModifier(donnees) {
-  const urlMed =
-    medAModifier.value.href || URL_BASE + "/" + medAModifier.value.id;
-  let myHeaders = new Headers();
-  myHeaders.append("Content-Type", "application/json");
-  const fetchOptions = {
+  donnees.id = medAModifier.value.id;
+  fetch(URL_BASE, {
     method: "PUT",
-    headers: myHeaders,
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(donnees),
-  };
-  fetch(urlMed, fetchOptions)
+  })
     .then((resp) => resp.json())
-    .then((data) => {
-      const idx = listeMed.findIndex((m) => m.id === medAModifier.value.id);
-      if (idx !== -1) {
-        listeMed[idx].nom = data.nom;
-        listeMed[idx].quantiteParUnite = data.quantiteParUnite;
-        listeMed[idx].imageURL = data.imageURL;
-        listeMed[idx].unitesEnStock = data.unitesEnStock;
-      }
+    .then(() => {
+      getMedicaments();
       afficherFormModif.value = false;
       medAModifier.value = null;
     })

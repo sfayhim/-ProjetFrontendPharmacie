@@ -1,12 +1,32 @@
 ﻿<script setup>
 import { ref } from "vue";
 
-const nom = ref("");
-const quantiteParUnite = ref("");
-const imageURL = ref("");
-const unitesEnStock = ref(0);
+const denomination = ref("");
+const formepharmaceutique = ref("");
+const photo = ref(null);
+const qte = ref(0);
 
 const emit = defineEmits(["ajouter", "fermer"]);
+
+function handleFileUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    photo.value = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function soumettre() {
+  const donnees = {
+    denomination: denomination.value,
+    formepharmaceutique: formepharmaceutique.value,
+    qte: Number(qte.value),
+  };
+  if (photo.value) donnees.photo = photo.value;
+  emit("ajouter", donnees);
+}
 </script>
 
 <template>
@@ -14,24 +34,15 @@ const emit = defineEmits(["ajouter", "fermer"]);
     <div class="modal">
       <div class="modal-entete">
         <h2>Nouveau médicament</h2>
-        <button class="btn-fermer" @click="emit('fermer')"></button>
+        <button class="btn-fermer" @click="emit('fermer')">x</button>
       </div>
 
-      <form
-        @submit.prevent="
-          $emit('ajouter', {
-            nom: nom,
-            quantiteParUnite: quantiteParUnite,
-            imageURL: imageURL,
-            unitesEnStock: Number(unitesEnStock),
-          })
-        "
-      >
+      <form @submit.prevent="soumettre">
         <div class="champ">
           <label for="aj-nom">Dénomination</label>
           <input
             id="aj-nom"
-            v-model="nom"
+            v-model="denomination"
             type="text"
             placeholder="ex: Doliprane"
             required
@@ -42,26 +53,21 @@ const emit = defineEmits(["ajouter", "fermer"]);
           <label for="aj-forme">Forme pharmaceutique</label>
           <input
             id="aj-forme"
-            v-model="quantiteParUnite"
+            v-model="formepharmaceutique"
             type="text"
-            placeholder="ex: comprimé 500 mg"
+            placeholder="ex: comprimé"
             required
           />
         </div>
 
         <div class="champ">
-          <label for="aj-photo">URL de la photo</label>
-          <input
-            id="aj-photo"
-            v-model="imageURL"
-            type="url"
-            placeholder="https://..."
-          />
+          <label for="aj-photo">Photo</label>
+          <input id="aj-photo" @change="handleFileUpload" type="file" />
         </div>
 
         <div class="champ">
           <label for="aj-stock">Quantité en stock</label>
-          <input id="aj-stock" v-model="unitesEnStock" type="number" min="0" />
+          <input id="aj-stock" v-model="qte" type="number" min="0" />
         </div>
 
         <div class="modal-actions">

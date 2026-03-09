@@ -12,19 +12,23 @@ const emit = defineEmits([
 <template>
   <div class="medicament">
     <div class="info">
-      <span class="nom">{{ medicament.nom }}</span>
-      <span>{{ medicament.quantiteParUnite }}</span>
-      <span>{{ medicament.unitesEnStock }}</span>
+      <span class="nom">{{ medicament.denomination }}</span>
+      <span>{{ medicament.formepharmaceutique }}</span>
+      <span>{{ medicament.qte }}</span>
     </div>
 
-    <img v-if="medicament.imageURL" :src="medicament.imageURL" class="image" />
+    <img
+      v-if="medicament.photo"
+      :src="'https://apipharmacie.pecatte.fr/images/' + medicament.photo"
+      class="image"
+    />
 
     <div class="actions">
       <button @click="emit('supprimer', medicament)">Supprimer</button>
       <button @click="emit('modifier', medicament)">Modifier</button>
       <button @click="emit('ajouterUnite', medicament)">+1</button>
       <button
-        :disabled="medicament.unitesEnStock === 0"
+        :disabled="medicament.qte === 0"
         @click="emit('retirerUnite', medicament)"
       >
         -1

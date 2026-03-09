@@ -4,23 +4,43 @@ import { ref, watch } from "vue";
 const props = defineProps(["medicament"]);
 const emit = defineEmits(["modifier", "fermer"]);
 
-const nom = ref("");
-const quantiteParUnite = ref("");
-const imageURL = ref("");
-const unitesEnStock = ref(0);
+const denomination = ref("");
+const formepharmaceutique = ref("");
+const photo = ref(null);
+const qte = ref(0);
 
 watch(
   () => props.medicament,
   (med) => {
     if (med) {
-      nom.value = med.nom;
-      quantiteParUnite.value = med.quantiteParUnite;
-      imageURL.value = med.imageURL;
-      unitesEnStock.value = med.unitesEnStock;
+      denomination.value = med.denomination;
+      formepharmaceutique.value = med.formepharmaceutique;
+      photo.value = null;
+      qte.value = med.qte;
     }
   },
   { immediate: true },
 );
+
+function handleFileUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    photo.value = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function soumettre() {
+  const donnees = {
+    denomination: denomination.value,
+    formepharmaceutique: formepharmaceutique.value,
+    qte: Number(qte.value),
+  };
+  if (photo.value) donnees.photo = photo.value;
+  emit("modifier", donnees);
+}
 </script>
 
 <template>
@@ -28,42 +48,33 @@ watch(
     <div class="modal">
       <div class="modal-entete">
         <h2>Modifier le médicament</h2>
-        <button class="btn-fermer" @click="emit('fermer')"></button>
+        <button class="btn-fermer" @click="emit('fermer')">x</button>
       </div>
 
-      <form
-        @submit.prevent="
-          $emit('modifier', {
-            nom: nom,
-            quantiteParUnite: quantiteParUnite,
-            imageURL: imageURL,
-            unitesEnStock: Number(unitesEnStock),
-          })
-        "
-      >
+      <form @submit.prevent="soumettre">
         <div class="champ">
           <label for="mod-nom">Dénomination</label>
-          <input id="mod-nom" v-model="nom" type="text" required />
+          <input id="mod-nom" v-model="denomination" type="text" required />
         </div>
 
         <div class="champ">
           <label for="mod-forme">Forme pharmaceutique</label>
           <input
             id="mod-forme"
-            v-model="quantiteParUnite"
+            v-model="formepharmaceutique"
             type="text"
             required
           />
         </div>
 
         <div class="champ">
-          <label for="mod-photo">URL de la photo</label>
-          <input id="mod-photo" v-model="imageURL" type="url" />
+          <label for="mod-photo">Photo</label>
+          <input id="mod-photo" @change="handleFileUpload" type="file" />
         </div>
 
         <div class="champ">
           <label for="mod-stock">Quantité en stock</label>
-          <input id="mod-stock" v-model="unitesEnStock" type="number" min="0" />
+          <input id="mod-stock" v-model="qte" type="number" min="0" />
         </div>
 
         <div class="modal-actions">
